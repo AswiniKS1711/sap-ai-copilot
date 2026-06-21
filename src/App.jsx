@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 
-const OPENROUTER_API_KEY = "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";
-const MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+const GROQ_API_KEY = "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";
+const MODEL = "llama-3.3-70b-versatile";
 
 const SAP_GLOSSARY = {
   "ST22": "A screen in SAP where you can see crash reports — like an error log that shows exactly what went wrong and where.",
@@ -340,18 +340,22 @@ export default function App() {
     const newHistory = [...history, { role: "user", content: userContent }];
 
     try {
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
         },
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 2000,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
-            ...newHistory,
+            ...newHistory.map(m => ({
+              role: m.role,
+              content: typeof m.content === "string" ? m.content :
+                m.content.map(c => c.type === "text" ? c.text : "[Image attached]").join("\n"),
+            })),
           ],
         }),
       });
